@@ -70,16 +70,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     //вспомогательный класс для создание viewholder
-    public static class TaskViewHolder extends RecyclerView.ViewHolder{
+    public static class TaskViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         private TextView tvTaskName;
         public TaskViewHolder(@NonNull View itemView) {
           super(itemView);
+          itemView.setOnClickListener(this);// Передача Click выбранного ViewHolder
           tvTaskName = itemView.findViewById(R.id.tvTaskName);
           tvTaskName.setText("***********Item Task*********");
         }
 
         public void setData(SwimEvent swimEvent) {
             tvTaskName.setText(swimEvent.getDate()+": "+swimEvent.getDescription());
+        }
+
+        @Override
+        public void onClick(View view) {
+
+            tvTaskName.setText("Clicked!!!!");
         }
     }
 }

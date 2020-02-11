@@ -2,14 +2,21 @@ package net.ukr.dandy1988.recycleview;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.TaskStackBuilder;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Button;
+import android.widget.Toast;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,76 +24,77 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView rv;
+    private Button btnEmail;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast toast = Toast.makeText(getApplicationContext(), "FAB pressed", Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            }
+        });
+
         rv = findViewById(R.id.rv);
         rv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        rv.setAdapter(new TaskAdapter(generateEvents()));
+        rv.setAdapter(new AdapterRecycleView.TaskAdapter(generateEvents()));
+
+        btnEmail = findViewById(R.id.btnEmail);
+
     }
+
+    // инфлейт меню (вверху приложения справа)
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    //создание списка меню и действия по выбору из списка
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            Toast.makeText(this, "Good bye!", Toast.LENGTH_LONG).show();
+//            finishAffinity();
+            this.finish();
+            return true;
+        }
+        if (id == R.id.settings_email) {
+            btnEmailPressed(new View(this));
+            return true;
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
     //создание списка ивентов
     public List<SwimEvent> generateEvents() {
         List<SwimEvent> events = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
-           events.add(new SwimEvent("2020.1."+i, "event#"+i, 0));
+            events.add(new SwimEvent("2020.1." + i, "event#" + i, 0));
         }
         return events;
     }
 
-    //конфигурирование адаптера
-    public static class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>{
-        //список ивентов
-        private final List<SwimEvent> data;
-        //конструктор адаптера
-        public TaskAdapter(List<SwimEvent> data) {
-            this.data = data;
-        }
-
-        @NonNull
-        @Override
-        //Создание вьюшки и засовывание ее во вью холдер и затем возвращение ее в адаптер
-        public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-            LayoutInflater layoutInflater = LayoutInflater.from(viewGroup.getContext());
-            View view = layoutInflater.inflate(R.layout.item_task, viewGroup, false);
-            TaskViewHolder viewHolder = new TaskViewHolder(view);
-            return viewHolder;
-        }
-
-        @Override
-        //Сохранение данных
-        public void onBindViewHolder(@NonNull TaskViewHolder taskViewHolder, int i) {
-            SwimEvent swimEvent = data.get(i);
-            taskViewHolder.setData(swimEvent);
-        }
-
-        @Override
-        //подсчет количества элементов
-        public int getItemCount() {
-            return data.size();
-        }
+    //кнопка для отправки e-mail
+    public void btnEmailPressed(View view) {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        Uri uri = Uri.parse("mailto: dandy1988@gmail.com");
+        intent.setData(uri);
+        intent.putExtra("subject", "my subject");
+        intent.putExtra("body", "my message");
+        startActivity(intent);
     }
-    //вспомогательный класс для создание viewholder
-    public static class TaskViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        private TextView tvTaskName;
-        public TaskViewHolder(@NonNull View itemView) {
-          super(itemView);
-          itemView.setOnClickListener(this);// Передача Click выбранного ViewHolder
-          tvTaskName = itemView.findViewById(R.id.tvTaskName);
-          tvTaskName.setText("***********Item Task*********");
-        }
 
-        public void setData(SwimEvent swimEvent) {
-            tvTaskName.setText(swimEvent.getDate()+": "+swimEvent.getDescription());
-        }
 
-        @Override
-        public void onClick(View view) {
-
-            tvTaskName.setText("Clicked!!!!");
-        }
-    }
 }
